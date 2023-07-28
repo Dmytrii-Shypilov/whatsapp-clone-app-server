@@ -62,15 +62,19 @@ const logIn = async (req, res, next) => {
 
 const logOut = async (req, res, next) => {
   try {
-    const { authorization = "" } = req.body;
-    const [bearer, token] = authorization.split(" ");
-
+    const { Authorization = "" } = req.body.headers;
+  
+    const [bearer, token] = Authorization.split(" ");
+  
     const { id } = jwt.verify(token, SECRET_KEY);
-    const user = await User.findOne({ id });
+ 
+    const user = await User.findOne({ _id: id });
+  
 
     if (!user) {
       throw createError(401, "Not authorized");
-    }
+    } 
+    /// check why it is logging out when there is an error (setting state in slice (check payload))
     await User.findByIdAndUpdate(id, {token: null})
     res.status(204).json({ message: "No content" });
   } catch (error) {
@@ -84,7 +88,7 @@ const getCurrent = async (req, res, next) => {
 
   const { id } = jwt.verify(token, SECRET_KEY);
   const user = await User.findOne({ id });
-console.log(user)
+
   if (!user) {
     throw createError(401, "Not authorized");
   }

@@ -2,10 +2,12 @@ const express = require("express");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const http = require("http");
+const findKey = require('./helpers/findKeyInMap')
 
 require("dotenv").config();
 
 const usersRouter = require("./routes/users");
+const { func } = require("joi");
 
 const app = express();
 const server = http.createServer(app);
@@ -26,27 +28,31 @@ app.use(express.json());
 
 app.use("/users", usersRouter);
 
-
-app.use((error, req, res)=> {
-  res.status(error.status).res({message: error.message})
-})
+app.use((error, req, res) => {
+  res.status(error.status).res({ message: error.message });
+});
 
 // SOCKET
 
-global.onlineUsers = new Object()
+global.onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-//   console.log("I'm connected");
-//   console.log(socket.id);
-  global.socket = socket 
-  socket.on("add-user", ({ id }) => {
-   onlineUsers[socket.id] = id
-   console.log(onlineUsers)
-   io.emit('notify', {users: onlineUsers})
-  });
- 
-});
+  //   console.log("I'm connected");
+    console.log(`SOCKET ID: ${socket.id}`);
+  const user = socket.handshake.query.user;
+  global.socket = socket; 
+    onlineUsers.set(user, socket.id) 
 
+    socket.on('disconnect', ()=> {
+      
+      onlineUsers.delete(findKey(onlineUsers, socket.id))
+      console.log(onlineUsers);
+    })
+  console.log(onlineUsers);
+  //  io.emit('notify', {users: onlineUsers})
+
+
+});
 
 
 module.exports = server;
