@@ -13,6 +13,10 @@ const userSchema = Schema({
     token: {
         type: String,
         default: null,
+    },
+    dialogs: {
+        type: Array,
+        default: []
     }
 }, {versionKey:  false})
 

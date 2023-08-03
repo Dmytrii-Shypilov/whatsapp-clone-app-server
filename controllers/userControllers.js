@@ -63,19 +63,18 @@ const logIn = async (req, res, next) => {
 const logOut = async (req, res, next) => {
   try {
     const { Authorization = "" } = req.body.headers;
-  
+
     const [bearer, token] = Authorization.split(" ");
-  
+
     const { id } = jwt.verify(token, SECRET_KEY);
- 
+
     const user = await User.findOne({ _id: id });
-  
 
     if (!user) {
       throw createError(401, "Not authorized");
-    } 
+    }
     /// check why it is logging out when there is an error (setting state in slice (check payload))
-    await User.findByIdAndUpdate(id, {token: null})
+    await User.findByIdAndUpdate(id, { token: null });
     res.status(204).json({ message: "No content" });
   } catch (error) {
     next(error);
@@ -83,22 +82,57 @@ const logOut = async (req, res, next) => {
 };
 
 const getCurrent = async (req, res, next) => {
-  const { authorization = "", name } = req.body;
-  const [bearer, token] = authorization.split(" ");
+  try {
+    const { authorization = "" } = req.headers;
+    const { name } = req.body;
+    const [bearer, token] = authorization.split(" ");
 
-  const { id } = jwt.verify(token, SECRET_KEY);
-  const user = await User.findOne({ id });
+    const { id } = jwt.verify(token, SECRET_KEY);
+    console.log(id);
+    const user = await User.findOne({ _id: id });
 
-  if (!user) {
-    throw createError(401, "Not authorized");
+    if (!user) {
+      throw createError(401, "Not authorized");
+    } else {
+      res.status(201).res({ name, token });
+    }
+  } catch (error) {
+    next(error);
   }
+};
 
-  res.status(201).res({ name, token });
+const getAllUsers = async (req, res, next) => {
+  try {
+    const { authorization = "" } = req.headers;
+    const [bearer, token] = authorization.split(" ");
+    const { id } = jwt.verify(token, SECRET_KEY);
+    const user = await User.findOne({ _id: id });
+    if (!user) {
+      throw createError(401, "Not authorized");
+    } else {
+      const users = await User.find({}); /// remove friends field after
+      const allUsers = users.reduce((acc, elem, idx) => {
+        const isFriend = elem._id in user.dialogs ? true : false;
+        elem.isFriend = isFriend;
+        console.log(elem.id, user.id)
+        if (elem.id !== user.id) {
+          acc.push(elem);
+        }
+        return acc;
+      }, []);
+      console.log(allUsers);
+
+      res.json({ allUsers });
+    }
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
   signUp,
   logIn,
   logOut,
-  getCurrent
+  getCurrent,
+  getAllUsers,
 };

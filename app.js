@@ -2,7 +2,7 @@ const express = require("express");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const http = require("http");
-const findKey = require('./helpers/findKeyInMap')
+const findKey = require("./helpers/findKeyInMap");
 
 require("dotenv").config();
 
@@ -38,21 +38,17 @@ global.onlineUsers = new Map();
 
 io.on("connection", (socket) => {
   //   console.log("I'm connected");
-    console.log(`SOCKET ID: ${socket.id}`);
+  console.log(`SOCKET ID: ${socket.id}`);
   const user = socket.handshake.query.user;
-  global.socket = socket; 
-    onlineUsers.set(user, socket.id) 
+  global.socket = socket;
+  onlineUsers.set(user, socket.id);
 
-    socket.on('disconnect', ()=> {
-      
-      onlineUsers.delete(findKey(onlineUsers, socket.id))
-      console.log(onlineUsers);
-    })
+  socket.on("disconnect", () => {
+    onlineUsers.delete(findKey(onlineUsers, socket.id));
+    console.log(onlineUsers);
+  });
   console.log(onlineUsers);
   //  io.emit('notify', {users: onlineUsers})
-
-
 });
-
 
 module.exports = server;
