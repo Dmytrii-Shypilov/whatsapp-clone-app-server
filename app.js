@@ -3,6 +3,8 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const http = require("http");
 const findKey = require("./helpers/findKeyInMap");
+const authorizationAPI = require("./middlewares/authorization");
+const dialogsAPI = require("./controllers/dialogControllers");
 
 require("dotenv").config();
 
@@ -21,34 +23,43 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
-
-// app.get("/", (req, res) => {
-//   res.json({ name: "Dima" });
-// });
-
 app.use("/users", usersRouter);
-
 app.use((error, req, res) => {
   res.status(error.status).res({ message: error.message });
 });
 
 // SOCKET
 
+io.use(authorizationAPI.authorizeSocket); /// fires during connection and all events
+
 global.onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-  //   console.log("I'm connected");
   console.log(`SOCKET ID: ${socket.id}`);
-  const user = socket.handshake.query.user;
+  const userName = socket.handshake.auth.userName;
   global.socket = socket;
-  onlineUsers.set(user, socket.id);
+  onlineUsers.set(userName, socket.id);
 
   socket.on("disconnect", () => {
     onlineUsers.delete(findKey(onlineUsers, socket.id));
     console.log(onlineUsers);
   });
+
+  socket.on("createDialog", async (data) => {
+    const { colocutorId, colocutorName } = data;
+    const { id, name } = socket.user;
+    const dialog = await dialogsAPI.addDialog(id, colocutorId);
+
+    if (dialog) {
+      [name, colocutorName].forEach((part) => {
+        io.to(onlineUsers.get(part)).emit("updateDialogs", {
+          message: "updated",
+        });
+      });
+    }
+  });
   console.log(onlineUsers);
-  //  io.emit('notify', {users: onlineUsers})
+  //  io.emit('notify', {users: onlineUsers})'
 });
 
 module.exports = server;

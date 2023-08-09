@@ -83,18 +83,15 @@ const logOut = async (req, res, next) => {
 
 const getCurrent = async (req, res, next) => {
   try {
-    const { authorization = "" } = req.headers;
-    const { name } = req.body;
-    const [bearer, token] = authorization.split(" ");
+   
+    const {id, name} = req.user
 
-    const { id } = jwt.verify(token, SECRET_KEY);
-    console.log(id);
     const user = await User.findOne({ _id: id });
 
     if (!user) {
       throw createError(401, "Not authorized");
     } else {
-      res.status(201).res({ name, token });
+      res.status(201).json({ name, token: user.token, id });
     }
   } catch (error) {
     next(error);
@@ -105,6 +102,7 @@ const getAllUsers = async (req, res, next) => {
   try {
     const { authorization = "" } = req.headers;
     const [bearer, token] = authorization.split(" ");
+ 
     const { id } = jwt.verify(token, SECRET_KEY);
     const user = await User.findOne({ _id: id });
     if (!user) {
@@ -112,22 +110,21 @@ const getAllUsers = async (req, res, next) => {
     } else {
       const users = await User.find({}); /// remove friends field after
       const allUsers = users.reduce((acc, elem, idx) => {
-        const isFriend = elem._id in user.dialogs ? true : false;
-        elem.isFriend = isFriend;
-        console.log(elem.id, user.id)
+        // const isFriend = elem._id in user.dialogs ? true : false;
+        // elem.isFriend = isFriend;
         if (elem.id !== user.id) {
           acc.push(elem);
         }
         return acc;
       }, []);
-      console.log(allUsers);
-
       res.json({ allUsers });
     }
   } catch (error) {
     next(error);
   }
 };
+
+
 
 module.exports = {
   signUp,
