@@ -9,7 +9,8 @@ const dialogsAPI = require("./controllers/dialogControllers");
 require("dotenv").config();
 
 const usersRouter = require("./routes/users");
-const { func } = require("joi");
+const dialogsRouter = require('./routes/dialogs')
+
 
 const app = express();
 const server = http.createServer(app);
@@ -23,7 +24,10 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+
 app.use("/users", usersRouter);
+app.use("/dialogs", dialogsRouter)
+
 app.use((error, req, res) => {
   res.status(error.status).res({ message: error.message });
 });

@@ -2,8 +2,27 @@ const Dialog = require("../models/dialog-model");
 const User = require("../models/user-model");
 
 
-const getAllDialogs = (req,res,next) => {
+const getAllDialogs = async (req,res,next) => {
+  const {id, name} = req.user
 
+  try {
+    const allDialogs = await Dialog.find({})
+
+    const userDialogs = allDialogs.reduce((acc, dialog, idx) => {
+      
+      if (dialog.participants.find(el=> el.id === id)) {
+        acc.push(dialog)
+        return acc
+      }
+      return acc
+    }, [])
+
+    console.log(userDialogs)
+    res.status(201).json({dialogs: userDialogs})
+
+  } catch (error) {
+    next(error)
+  }
 }
 
 const addDialog = async (initiator, colocutor) => {
@@ -42,4 +61,5 @@ const addDialog = async (initiator, colocutor) => {
 
 module.exports = {
   addDialog,
+  getAllDialogs
 };
