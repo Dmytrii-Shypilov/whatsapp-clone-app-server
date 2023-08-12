@@ -1,14 +1,23 @@
 const {Schema, model} = require('mongoose')
 
 
-
 const dialogSchema = Schema({
     participants: {
-        type: Array,
+        type: [{
+            name: {
+                type: String
+            },
+            id: {
+                type: String,
+            },
+            accepted: {
+                type: Boolean
+            }
+        }],
         default: []
     },
     messages: {
-        type: Array,
+        type: [],
         default: []
     }
 }, {versionKey:  false})

@@ -9,8 +9,8 @@ const dialogsAPI = require("./controllers/dialogControllers");
 require("dotenv").config();
 
 const usersRouter = require("./routes/users");
-const dialogsRouter = require('./routes/dialogs')
-
+const dialogsRouter = require("./routes/dialogs");
+const Dialog = require("./models/dialog-model");
 
 const app = express();
 const server = http.createServer(app);
@@ -26,7 +26,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/users", usersRouter);
-app.use("/dialogs", dialogsRouter)
+app.use("/dialogs", dialogsRouter);
 
 app.use((error, req, res) => {
   res.status(error.status).res({ message: error.message });
@@ -57,9 +57,27 @@ io.on("connection", (socket) => {
     if (dialog) {
       [name, colocutorName].forEach((part) => {
         io.to(onlineUsers.get(part)).emit("updateDialogs", {
-          message: "updated",
+          dialog,
         });
       });
+    }
+  });
+
+  socket.on("acceptInvite", async (data) => {
+    try {
+      const { id, name } = socket.user;
+      const dialog = await dialogsAPI.acceptInvite(data.dialogId, id);
+      const parts = [dialog.participants[0]["name"], dialog.participants[1]['name']];
+
+      parts.forEach((part) => {
+        io.to(onlineUsers.get(part)).emit("InviteAccepted", {
+          dialogId: dialog.id,
+          acceptedBy: id,
+        });
+      });
+      console.log(dialog);
+    } catch (error) {
+      console.log(error);
     }
   });
   console.log(onlineUsers);
