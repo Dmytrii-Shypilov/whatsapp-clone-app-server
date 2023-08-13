@@ -17,7 +17,25 @@ const dialogSchema = Schema({
         default: []
     },
     messages: {
-        type: [],
+        type: [{
+            from:{
+                type: String
+            },
+            messageContent: {
+                type: [{
+                    message: {
+                        type: String
+                    },
+                    time: {
+                        type: String
+                    },
+                    isRead: {
+                        type: Boolean
+                    }
+
+                }]
+            }
+        }],
         default: []
     }
 }, {versionKey:  false})

@@ -1,0 +1,1 @@
+const emitResponseToParticipants = (participants, event) => {}

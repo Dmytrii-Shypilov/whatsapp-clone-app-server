@@ -67,7 +67,10 @@ io.on("connection", (socket) => {
     try {
       const { id, name } = socket.user;
       const dialog = await dialogsAPI.acceptInvite(data.dialogId, id);
-      const parts = [dialog.participants[0]["name"], dialog.participants[1]['name']];
+      const parts = [
+        dialog.participants[0]["name"],
+        dialog.participants[1]["name"],
+      ];
 
       parts.forEach((part) => {
         io.to(onlineUsers.get(part)).emit("InviteAccepted", {
@@ -75,11 +78,17 @@ io.on("connection", (socket) => {
           acceptedBy: id,
         });
       });
-      console.log(dialog);
     } catch (error) {
       console.log(error);
     }
   });
+
+  socket.on("addMessage", async (data) => {
+    console.log("Add message", data);
+    const result = await dialogsAPI.addMessage(data)
+    console.log(result)
+  });
+
   console.log(onlineUsers);
   //  io.emit('notify', {users: onlineUsers})'
 });

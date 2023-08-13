@@ -34,12 +34,11 @@ const addDialog = async (initiator, colocutor) => {
     };
 
     const doesDialogExist = await Dialog.findOne({ ...dialog });
-    console.log(doesDialogExist)
 
     if (!doesDialogExist) {
       const newDialog = await Dialog.create(dialog);
 
-      if (newDialog) {
+      if (newDialog && userOne && userTwo) {
         await userOne.dialogs.push({
           dialogId: newDialog.id,
           colocutor: colocutor,
@@ -69,12 +68,43 @@ const acceptInvite = async (dialogId, acceptorId) => {
     await dialog.save();
     return dialog;
   } catch (error) {
-    console.log(error);
+    return {message: error.message}
   }
 };
+
+const addMessage = async (data)=> {
+  const {lastMessageIdx, dialogId, messageData} = data
+  try {
+    const dialog = await Dialog.findById(dialogId)
+   if (lastMessageIdx === null) {
+    const newMessage = {
+      from: messageData.from,
+      messageContent: [messageData.message]
+    }
+    dialog.messages.push(newMessage)
+   } else {
+    dialog.messages[lastMessageIdx].messageContent.push(messageData.message)
+   }
+    dialog.save()
+    return {messageReceived: true}
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const readMessage = async (readersId, dialogId) => {
+  try {
+    const dialog = await Dialog.findById(dialogId)
+    
+
+  } catch (error) {
+    
+  }
+}
 
 module.exports = {
   addDialog,
   getAllDialogs,
   acceptInvite,
+  addMessage
 };
