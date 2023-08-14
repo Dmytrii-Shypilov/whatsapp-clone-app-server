@@ -73,9 +73,11 @@ const acceptInvite = async (dialogId, acceptorId) => {
 };
 
 const addMessage = async (data)=> {
+  console.log(data)
   const {lastMessageIdx, dialogId, messageData} = data
   try {
     const dialog = await Dialog.findById(dialogId)
+    const colocutorName = dialog.participants.find(el=> el.id !== messageData.from).name
    if (lastMessageIdx === null) {
     const newMessage = {
       from: messageData.from,
@@ -85,8 +87,9 @@ const addMessage = async (data)=> {
    } else {
     dialog.messages[lastMessageIdx].messageContent.push(messageData.message)
    }
+    
     dialog.save()
-    return {messageReceived: true}
+    return {data, colocutorName}
   } catch (error) {
     console.log(error)
   }

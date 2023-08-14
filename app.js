@@ -56,7 +56,7 @@ io.on("connection", (socket) => {
 
     if (dialog) {
       [name, colocutorName].forEach((part) => {
-        io.to(onlineUsers.get(part)).emit("updateDialogs", {
+        io.to(onlineUsers.get(part)).emit("UpdateDialogs", {
           dialog,
         });
       });
@@ -84,9 +84,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("addMessage", async (data) => {
-    console.log("Add message", data);
     const result = await dialogsAPI.addMessage(data)
-    console.log(result)
+    if (result) {
+      const {data, colocutorName} = result
+
+      io.to(onlineUsers.get(colocutorName)).emit('MessageAdded', data)
+      // parts.forEach(part => {
+      //   io.to(onlineUsers.get(part)).emit('Message added', data)
+      // })
+    }
+
   });
 
   console.log(onlineUsers);
