@@ -35,6 +35,7 @@ const signUp = async (req, res, next) => {
 };
 
 const logIn = async (req, res, next) => {
+  console.log('LOGGGGING')
   try {
     const { name, password } = req.body;
     const user = await User.findOne({ name });
