@@ -17,7 +17,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://lets-4at-app.netlify.app/",
+    origin: "*",
     methods: ["GET", "POST", "PATCH"],
   },
 });
